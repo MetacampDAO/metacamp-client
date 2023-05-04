@@ -1,0 +1,26 @@
+{
+    "name": "Dog #0002",
+    "symbol": "DOGS",
+    "description": "Collection of dogs around the world.",
+    "image": "tests.png",
+    "external_url": "https://test.com",
+    "sellerFeeBasisPoints": 100,
+    "attributes": [
+      {
+        "trait_type": "scene",
+        "value": "chair"
+      },
+      {
+        "trait_type": "mood",
+        "value": "ehhhhhh"
+      }
+    ],
+    "properties": {
+      "files": [
+        {
+          "uri": "1.png",
+          "type": "image/png"
+        }
+      ]
+    }
+  }
