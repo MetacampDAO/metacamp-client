@@ -23,6 +23,8 @@
   },
   "dependencies": {
     "@certusone/wormhole-sdk": "^0.9.9",
+    "@dialectlabs/blockchain-sdk-solana": "^1.0.1",
+    "@dialectlabs/sdk": "^1.5.2",
     "@metaplex-foundation/js": "^0.18.3",
     "@metaplex-foundation/mpl-token-metadata": "^2.10.0",
     "@nftstorage/metaplex-auth": "^1.2.0",

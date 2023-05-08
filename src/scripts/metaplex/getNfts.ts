@@ -18,18 +18,18 @@ const cluster: web3.Cluster = "devnet"
 
 // const pubKey = new PublicKey("7NvumDTDxoEM55f2y3QjHQTwnVS9f2M62ZcL2Hb4GU4d") // Buildspace
 
-// const pubKey = new PublicKey("35NbFY9avgwNnwpU7Cd9dm4DDRhS11SsmzEeDhfoiire") // CandyMachine V2
-// const pubKey = new PublicKey("Go2fRXAV3kdfCHtdaQ6B5HayueSDbkDASWXrZ71z5T5M") // CandyMachine V3
-// const pubKey = new PublicKey("5wqLYhrYu9hyLpj4keKfzfr38UAwGHUDCw3LLBnQcC2U") // Metaplex
-const pubKey = new web3.PublicKey("SMBH3wF6baUj6JWtzYvqcKuj2XCKWDqQxzspY12xPND") // smb
-// const pubKey = new PublicKey("B7B2g3WbdZMDV3YcDGRGhEt5KyWqDJZFwRR8zpWVEkUF") // dactyls
+// const pubKey = new web3.PublicKey("5wqLYhrYu9hyLpj4keKfzfr38UAwGHUDCw3LLBnQcC2U") // Metaplex
+// const pubKey = new web3.PublicKey("J1S9H3QjnRtBbbuD4HjPV6RpRhwuk4zKbxsnCHuTgh9w") // Mad Lads
+// const pubKey = new web3.PublicKey("SMBH3wF6baUj6JWtzYvqcKuj2XCKWDqQxzspY12xPND") // smb
+// const pubKey = new web3.PublicKey("B7B2g3WbdZMDV3YcDGRGhEt5KyWqDJZFwRR8zpWVEkUF") // dactyls
+const pubKey = new web3.PublicKey("EF6Y7xTmoPnpaF4jAUPfKXpeifXR2jDAyaRT3adE5XNN")
 
 
 async function main() {
 
   // Connect to cluster
-  // const connection = new web3.Connection(web3.clusterApiUrl(cluster))
-  const connection = new web3.Connection(process.env.MAINNET_CONNECTION ?? "")
+  const connection = new web3.Connection(web3.clusterApiUrl(cluster))
+  // const connection = new web3.Connection(process.env.MAINNET_CONNECTION ?? "")
 
   // Get or create Keypair for user
   const user = await initializeSolSignerKeypair()
@@ -54,13 +54,13 @@ async function getNfts(
   let signatures : web3.ConfirmedSignatureInfo[] = await getAllSignaturesFromPubkey(connection, pubKey, directoryPath, "signatures")
 
   // // Read or get tx from signatures
-  let transactions : (web3.TransactionResponse | null)[]  = await getAllTxsFromSignatures(connection, pubKey, directoryPath, "signatures", "transactions")
+  let transactions : (web3.TransactionResponse | null)[]  = await getAllTxsFromSignatures(connection, pubKey, directoryPath, "signatures", "transactions", 25)
 
   // Parse metadata accounts from tx
   let metadataAccounts : web3.PublicKey[] = await parseTxMetadataAccounts(pubKey, directoryPath, "transactions", "metadataAccounts")
 
   // Read or get metadata from metadata accounts
-  let metadataArray : Metadata[] = await getMetadata(connection, pubKey, directoryPath, "metadataAccounts", "metadataArray")
+  let metadataArray : Metadata[] = await getMetadata(connection, pubKey, directoryPath, "metadataAccounts", "metadataArray", 25)
 
   // Get mints from metadata
   let mintArray : web3.PublicKey[] = await getMintsFromMetadata(pubKey, directoryPath, "metadataArray", "mintAccounts")
@@ -157,6 +157,7 @@ async function getAllTxsFromSignatures(
   directoryPath: string,
   sigFieldName: string,
   txFieldName: string,
+  batchSize: number = 100,
   skip?: boolean
   ) : Promise<(web3.TransactionResponse | null)[]> {
 
@@ -174,7 +175,6 @@ async function getAllTxsFromSignatures(
 
     // Check if skipping
     if (!skip) {
-      let batchSize = 5
 
       // Check if transactions exist
       if (!Array.isArray(transactions) || transactions.length == 0 || transactions.every(item => item === null)) {

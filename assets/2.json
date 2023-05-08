@@ -8,11 +8,15 @@
     "attributes": [
       {
         "trait_type": "scene",
-        "value": "bag"
+        "value": "chair"
+      },
+      {
+        "trait_type": "costume",
+        "value": "santa claus"
       },
       {
         "trait_type": "mood",
-        "value": "arrrrrr"
+        "value": "houhou"
       }
     ],
     "properties": {

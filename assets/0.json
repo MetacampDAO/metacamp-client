@@ -11,10 +11,15 @@
         "value": "floor"
       },
       {
+        "trait_type": "costume",
+        "value": "gansta"
+      },
+      {
         "trait_type": "mood",
-        "value": "heehehe"
+        "value": "blub"
       }
     ],
+    "collection": "test",
     "properties": {
       "files": [
         {

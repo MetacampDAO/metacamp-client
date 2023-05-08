@@ -1,7 +1,7 @@
 import { initializeSolSignerKeypair, airdropSolIfNeeded } from "./scripts/initializeKeypair"
 import * as web3 from "@solana/web3.js"
 
-import createNfts from "./scripts/metaplex/createNftOrCollection"
+import { createCollection, createNfts } from "./scripts/metaplex/createNftsOrCollection"
 import addAndVerifyCollection from "./scripts/metaplex/addNftToCollection"
 
 
@@ -14,24 +14,23 @@ async function main() {
   await airdropSolIfNeeded(signer, connection)
 
   // Create collection NFT 
-  console.log(``)
-  console.log('***NEXT PROCESS - CREATING NFT(s) ...')
-  console.log(``)
-  const arrayOfNfts = await createNfts(cluster, signer, 'assets')
-  console.log(`***RESULT - NUMBER OF NFT(S) CREATED: ${arrayOfNfts.length}`)
-  console.log(``)
+  console.log(`\n***NEXT PROCESS - CREATING COLLECTION ... \n`)
+  const collectionKey = await createCollection(cluster, signer, 'assets')
 
-  console.log(``)
-  console.log(`***NEXT PROCESS - ADDING AND VERIFYING COLLECTION ${arrayOfNfts[0]} TO NFT(S) ...`)
-  console.log(``)
+  console.log(`\n***NEXT PROCESS - CREATING NFT(s) ... \n`)
+  const nftArray = await createNfts(cluster, signer, 'assets')
+  console.log(`***RESULT - NUMBER OF NFT(S) CREATED: ${nftArray.length} \n`)
+
+
+  console.log(`\n***NEXT PROCESS - ADDING AND VERIFYING COLLECTION ${collectionKey} TO NFT(S) ... \n`)
   // Add and verify NFT to collection
-  const arrayOfVerifications = await addAndVerifyCollection(cluster, signer, arrayOfNfts)
-  console.log(`***RESULT - NUMBER OF NFT(S) ADDED AND VERIFIED TO COLLECTION: ${arrayOfVerifications.length}`)
-  console.log('')
+  const arrayOfVerifications = await addAndVerifyCollection(cluster, signer, collectionKey, nftArray)
+  console.log(`***RESULT - NUMBER OF NFT(S) ADDED AND VERIFIED TO COLLECTION: ${arrayOfVerifications.length} \n`)
+
 
 
   
-  return arrayOfNfts
+  return nftArray
 
 }
 

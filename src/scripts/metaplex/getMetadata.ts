@@ -317,6 +317,7 @@ export async function getMetadata(
   directoryPath: string,
   addressFieldName: string,
   metadataFieldName: string,
+  batchSize: number = 100,
   skip?: boolean
     ) : Promise<Metadata[]> {
 
@@ -334,7 +335,6 @@ export async function getMetadata(
 
     // Check if skipping
     if (!skip) {
-      let batchSize = 20
 
       // Check if transactions exist
       while (metadataArray.length < metadataAccounts.length || (!Array.isArray(metadataArray) || metadataArray.length == 0 || metadataArray.every(item => item === null))) {

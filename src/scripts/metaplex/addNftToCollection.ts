@@ -1,6 +1,7 @@
 import { airdropSolIfNeeded, initializeSolSignerKeypair } from "../initializeKeypair"
 import * as web3 from "@solana/web3.js"
 import { PublicKey } from "@solana/web3.js"
+import { readOrCreateFile } from "../readOrCreateJsonFile"
 
 import {
   toBigNumber,
@@ -17,9 +18,11 @@ async function main() {
   const user = await initializeSolSignerKeypair()
   await airdropSolIfNeeded(user, connection)
 
-  const arrayOfNfts = [new PublicKey("9g6XoZE1q7MXs9qzcRNvXYhyzhLw4k4so49nRn6U9ykg"), new PublicKey("DoxNzhJQm23m2Rxgk3xMefJki6Mo5f2c2ZE3FP4KpshK") ] 
+  const collectionKey = new PublicKey("")
 
-  const arrayOfVerifications = await addAndVerifyCollection(cluster, user, arrayOfNfts)
+  const arrayOfNfts = readOrCreateFile(`${collectionKey}.json`,`assets/collections/`)['mintAccounts']
+
+  const arrayOfVerifications = await addAndVerifyCollection(cluster, user, collectionKey, arrayOfNfts)
 
   return arrayOfVerifications
 
@@ -31,7 +34,8 @@ async function main() {
 export default async function addAndVerifyCollection(
   cluster: web3.Cluster,
   signer: web3.Keypair,
-  arrayOfNfts: web3.PublicKey[], // First NFT is collection NFT
+  collectionKey: web3.PublicKey,
+  nftKeyArray: web3.PublicKey[], // First NFT is collection NFT
 ) : Promise<Array<any>> {
 
 
@@ -40,31 +44,33 @@ export default async function addAndVerifyCollection(
   const metaplex = Metaplex.make(connection)
   .use(keypairIdentity(signer))
 
-  // Get number of NFTs with collection NFT
-  const numberOfNfts = arrayOfNfts.length
+  // const nft = readOrCreateFile(`${fileName}.json`, directoryPath)
 
-  let i = 1
+  // Get number of NFTs with collection NFT
+  const numberOfNfts = nftKeyArray.length
+
+  let i = 0
   let arrayOfVerifications = []
   while (i < numberOfNfts) {
     // Get "NftWithToken" type from mint address
-    const nft = await metaplex.nfts().findByMint( { mintAddress: arrayOfNfts[i]})
+    const nft = await metaplex.nfts().findByMint( { mintAddress: nftKeyArray[i]})
 
     // Update metaplex data and add collection
     await metaplex
     .nfts()
     .update({
       nftOrSft: nft,
-      collection: arrayOfNfts[0],
+      collection: collectionKey,
     })
 
-    console.log(`(${i}/${numberOfNfts-1}) Token Mint: https://explorer.solana.com/address/${nft.address.toString()}?cluster=${cluster}`)
-    console.log(`(${i}/${numberOfNfts-1}) Waiting to verify collection ${arrayOfNfts[0]} on mint ${arrayOfNfts[i]}... `)
+    console.log(`(${i+1}/${numberOfNfts}) Token Mint: https://explorer.solana.com/address/${nft.address.toString()}?cluster=${cluster}`)
+    console.log(`(${i+1}/${numberOfNfts}) Waiting to verify collection ${nftKeyArray[0]} on mint ${nftKeyArray[i]}... `)
     
 
     // verify collection by owner
     const { response } = await metaplex.nfts().verifyCollection({
-      mintAddress: arrayOfNfts[i],
-      collectionMintAddress: arrayOfNfts[0],
+      mintAddress: nftKeyArray[i],
+      collectionMintAddress: collectionKey,
       isSizedCollection: false
     })
 
@@ -75,7 +81,7 @@ export default async function addAndVerifyCollection(
     //   size: toBigNumber(1)
     // })
 
-    console.log(`(${i}/${numberOfNfts-1}) Signature Explorer: https://explorer.solana.com/signuature/${response.signature}?cluster=${cluster}`)
+    console.log(`(${i+1}/${numberOfNfts}) Signature Explorer: https://explorer.solana.com/signuature/${response.signature}?cluster=${cluster}`)
     console.log('')
 
     arrayOfVerifications.push(response.signature)

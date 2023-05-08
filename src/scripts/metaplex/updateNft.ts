@@ -1,7 +1,7 @@
 import { airdropSolIfNeeded, initializeSolSignerKeypair } from "../initializeKeypair"
 import * as web3 from "@solana/web3.js"
 import { PublicKey } from "@solana/web3.js"
-import test from "../../../assets/test.json"
+import { readOrCreateFile } from "../readOrCreateJsonFile"
 
 import {
   Metaplex,
@@ -28,7 +28,7 @@ async function main() {
 
 
   // Call function to update NFT
-  await updateNft(connection, user, uri, mint, collection)
+  await updateNft(connection, user, mint, "assets/collections/", "1")
 
 }
 
@@ -38,9 +38,9 @@ async function main() {
 async function updateNft(
   connection: web3.Connection,
   signer: web3.Keypair,
-  uri: string,
   mintAddress: PublicKey,
-  collectionAddress: PublicKey
+  directoryPath: string,
+  fileName : string
 ) {
 
   // Set up Metaplex client
@@ -50,17 +50,20 @@ async function updateNft(
   // Get "NftWithToken" type from mint address
   const nft = await metaplex.nfts().findByMint({ mintAddress })
 
+  // Get JSON file
+  const nftJson = readOrCreateFile(`${fileName}.json`, directoryPath)
+
   // Set and call metadata to be updated
   await metaplex
     .nfts()
     .update({
       nftOrSft: nft,
-      name: test.name,
-      symbol: test.symbol,
-      uri: uri,
-      sellerFeeBasisPoints: test.sellerFeeBasisPoints,
-      collection: collectionAddress  
+      name: nftJson.name,
+      symbol: nftJson.symbol,
+      uri: nftJson.uri,
+      sellerFeeBasisPoints: nftJson.sellerFeeBasisPoints,
     })
+
 
   console.log(
     `Token Mint: https://explorer.solana.com/address/${nft.address.toString()}?cluster=devnet`

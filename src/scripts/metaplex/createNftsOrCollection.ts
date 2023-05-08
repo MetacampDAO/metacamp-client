@@ -1,6 +1,7 @@
 import { airdropSolIfNeeded, initializeSolSignerKeypair } from "../initializeKeypair"
 import * as web3 from "@solana/web3.js"
 import { NFTStorageMetaplexor } from '@nftstorage/metaplex-auth'
+import { readOrCreateFile } from "../readOrCreateJsonFile"
 
 
 import {
@@ -26,9 +27,33 @@ async function main() {
 
 }
 
+// create Collection NFT
+export async function createCollection(
+  cluster: web3.Cluster,
+  signer: web3.Keypair,
+  directoryPath: string
+): Promise<web3.PublicKey> {
+
+  // Checking files in asset directory
+  const files = await fs.promises.readdir(directoryPath);
+  const collectionFiles = files.filter(file => file.startsWith("collection.json"));
+  console.log(`${collectionFiles.length} collection.json file found. \n`);
+
+  // Create Collection mint
+  console.log(`Creating NFT from collection.json ...`)
+  const collectionData = await createNft(cluster, signer, directoryPath + "/collection.json");
+  console.log(`Created Collection NFT Explorer: https://explorer.solana.com/address/${collectionData.nft.address.toString()}?cluster=${cluster}`)
+  await readOrCreateFile(`${collectionData.nft.address}.json`, "assets/collections/", { "referenceKey" : collectionData.nft.address })
+  console.log(`Saved collection to ${directoryPath}/collections/${collectionData.nft.address}.json \n`)
+
+  // Return collection key
+  return collectionData.nft.address;
+
+}
+
 
 // create NFT
-export default async function createNfts(
+export async function createNfts(
   cluster: web3.Cluster,
   signer: web3.Keypair,
   assetDirectory: string
@@ -38,41 +63,29 @@ export default async function createNfts(
   const jsonType = '.json';
   const files = await fs.promises.readdir(assetDirectory);
   const jsonFiles = files.filter(file => file.endsWith(jsonType));
-  const otherFiles = files.filter(file => !file.endsWith(jsonType));
   const collectionFiles = files.filter(file => file.startsWith("collection.json"));
-  console.log(`${jsonFiles.length} JSON files and ${otherFiles.length} other files found, among collection.json file is found.`);
-  console.log(``)
+  console.log(`${jsonFiles.length - collectionFiles.length} NFT JSON file(s) are found. \n`);
+
+
 
   // Creating NFTs
-  const numberOfNfts = jsonFiles.length;
-  const arrayOfNtfs: web3.PublicKey[] = [];
+  const numberOfNfts = jsonFiles.length - collectionFiles.length;
+  const NftArray: web3.PublicKey[] = [];
+
   for (let i = 0; i < numberOfNfts; i++) {
     
-    if (i == 0) {
-
-      // Create Collection mint
-      console.log(`(${i+1}/${numberOfNfts}) Creating NFT from collection.json ...`)
-      const collectionData = await createNft(cluster, signer, assetDirectory + "/collection.json");
-      console.log(`(${i+1}/${numberOfNfts}) Created Collection NFT Explorer: https://explorer.solana.com/address/${collectionData.nft.address.toString()}?cluster=${cluster}`)
-      console.log(``)
-      arrayOfNtfs.push(collectionData.nft.address);
-      i++
-
-    }
-
     // Create NFT mint
-    console.log(`(${i+1}/${numberOfNfts}) Creating NFT from ${i-1}.json ...`)
-    const mintData = await createNft(cluster, signer, assetDirectory + `/${i-1}.json`);
-    console.log(`(${i+1}/${numberOfNfts}) Created NFT Explorer: https://explorer.solana.com/address/${mintData.nft.address.toString()}?cluster=${cluster}`)
-    console.log(``)
-    arrayOfNtfs.push(mintData.nft.address);
+    console.log(`(${i+1}/${numberOfNfts}) Creating NFT from ${i}.json ...`)
+    const mintData = await createNft(cluster, signer, assetDirectory + `/${i}.json`);
+    console.log(`(${i+1}/${numberOfNfts}) Created NFT Explorer: https://explorer.solana.com/address/${mintData.nft.address.toString()}?cluster=${cluster} \n`)
+    NftArray.push(mintData.nft.address);
 
   }
 
 
 
-  // Return the array of NFT keys, including the collection key
-  return arrayOfNtfs;
+  // Return the array of NFT keys
+  return NftArray;
 
 }
 
@@ -111,13 +124,15 @@ export async function createNft(
       name: nft.metadata.name,
       sellerFeeBasisPoints: nft.metadata.sellerFeeBasisPoints,
       symbol: nft.metadata.symbol,
-      uses: {
-        useMethod: 0,
-        remaining: 4294967295,
-        total: 4294967295
-      }
+      // uses: {
+      //   useMethod: nft.metadata.uses.useMethod,
+      //   remaining: nft.metadata.uses.remaining,
+      //   total: nft.metadata.uses.total
+      // }
       // maxSupply: null
-    })
+      },
+      { commitment: "finalized" }
+    )
 
   console.log(`Signature Explorer: https://explorer.solana.com/tx/${data.response.signature}?cluster=devnet$`)
 

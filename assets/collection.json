@@ -8,11 +8,15 @@
     "attributes": [
       {
         "trait_type": "scene",
-        "value": "street"
+        "value": "home"
+      },
+      {
+        "trait_type": "costume",
+        "value": "none"
       },
       {
         "trait_type": "mood",
-        "value": "?"
+        "value": "handsome"
       }
     ],
     "properties": {

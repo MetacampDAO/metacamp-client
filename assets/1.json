@@ -8,11 +8,15 @@
     "attributes": [
       {
         "trait_type": "scene",
-        "value": "chair"
+        "value": "floor"
+      },
+      {
+        "trait_type": "costume",
+        "value": "flower"
       },
       {
         "trait_type": "mood",
-        "value": "ehhhhhh"
+        "value": "pretty"
       }
     ],
     "properties": {
